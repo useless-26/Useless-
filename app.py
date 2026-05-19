@@ -17,11 +17,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ============ CONFIG ============
-BOT_TOKEN = os.getenv('8625405642:AAFZqw9qe5dz4WAm59CTkvh6gFthr1s-0d8')
-OWNER_ID = int(os.getenv('8263194061', 0))
+BOT_TOKEN = os.getenv('BOT_TOKEN')          # ✅ Fixed: key name as string
+OWNER_ID_STR = os.getenv('OWNER_ID', '0')
+OWNER_ID = int(OWNER_ID_STR) if OWNER_ID_STR.isdigit() else 0  # ✅ Safe int conversion
 
 if not BOT_TOKEN:
-    print("❌ BOT_TOKEN not found!")
+    print("❌ BOT_TOKEN not found in environment variables!")
     sys.exit(1)
 
 # Setup
@@ -339,7 +340,6 @@ async def delete_script(callback: types.CallbackQuery):
     user_id = str(callback.from_user.id)
     script_name = callback.data.split(":")[1]
     
-    # Check if running
     for info in running_scripts.values():
         if info['name'] == script_name and info['owner'] == user_id:
             await callback.answer("❌ Stop the script first!", show_alert=True)
@@ -379,12 +379,10 @@ def run_flask():
 async def main():
     logger.info("🚀 Starting Python Script Hosting Bot...")
     
-    # Start Flask in background thread
     flask_thread = Thread(target=run_flask, daemon=True)
     flask_thread.start()
-    logger.info(f"🌐 Flask API started")
+    logger.info("🌐 Flask API started")
     
-    # Start bot
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
